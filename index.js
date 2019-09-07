@@ -5,7 +5,7 @@ const { JSDOM } = require("jsdom");
 const schedule = require('node-schedule');
 
 const imgSelector = "#teecommerce > div.content.body-product > div > div > div > div:nth-child(2) > div.col-md-4 > div > a"
-const botToken = "758652826:AAHebqDZlnzK9ENXOVxePnwxvAAyInV0nhE";
+const botToken = require('./botkey.json').botToken;
 const bot = new telegraf(botToken);
 
 var users;
