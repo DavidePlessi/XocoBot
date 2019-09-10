@@ -40,10 +40,14 @@ function getTshirtUpdated(){
         var imgUrl = $(imgSelector).attr('href');
         if (imgUrl !== latestTshirt){
             latestTshirt = imgUrl;
-            newDesignNotified = true;
+            newDesignNotified = false;
             console.log(`${new Date()}: Tshirtd updated ${imgUrl}`);
         }       
     });
+}
+
+function sendTshirtToAllChat(){
+    sendTelegrafToAllChat(getTshirtUpdateMessage());
 }
 
 function sendTelegrafToAllChat(message){
@@ -57,7 +61,7 @@ function sendTelegraf(chatId, message){
     console.log(`${new Date()}: message send to ${chatId}`);
 }
 
-function checkAdmin(chatId, func, successMessage){
+function checkAdmin(chatId, func){
     if(chatId === 219448283){
         func();
         return true;
@@ -69,15 +73,14 @@ function checkAdmin(chatId, func, successMessage){
 readUserJson();
 getTshirtUpdated();
 
-jobs["UpdateTshirt"] = schedule.scheduleJob({hour: 0, minute: 0, second: 5}, () => {
+jobs["UpdateTshirt"] = schedule.scheduleJob({hour: 0, minute: 10}, () => {
     getTshirtUpdated();
 });
 
-jobs["NotifyNewDesign"] = schedule.scheduleJob({hour: 10, minute: 0}, () => {
-    if(!newDesignNotified) return;
-
-    sendTelegrafToAllChat(getTshirtUpdateMessage());
-    newDesignNotified = false;
+jobs["NotifyNewDesign"] = schedule.scheduleJob({hour: 10, minute: 00}, () => {
+    if(newDesignNotified) return;
+    sendTshirtToAllChat();
+    newDesignNotified = true;
 });
 
 bot.start((ctx) => addNewUser(ctx.chat.first_name, ctx.chat.id));
@@ -90,7 +93,7 @@ bot.hears('updateTshirt', (ctx) => {
     }
 });
 bot.hears('sendAll', (ctx) => {
-    if(!checkAdmin(ctx.chat.id, sendTelegrafToAllChat))
+    if(!checkAdmin(ctx.chat.id, sendTshirtToAllChat))
         ctx.reply('E sticazzi?');
 });
 console.log(`${new Date()}: BOT started`);
