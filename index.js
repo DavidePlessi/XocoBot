@@ -14,9 +14,11 @@ let latestShirt = "";
 let newDesignNotified = false;
 const getShirtUpdateMessage = () => latestShirt + "\n\nhttps://www.teetee.eu\n\nHere the last design!!!";
 
+const log = (message) => { console.log(`${new Date()}: ${message}`); }
+
 function addNewUser(name, chatId){
     users[chatId] = name;    
-    console.log(`${new Date()}: user added ${chatId}: ${name}`);
+    log(`user added ${chatId}: ${name}`);
     writeUserJson();
     sendTelegraf(chatId, getShirtUpdateMessage());
 }
@@ -37,7 +39,7 @@ function getShirtUpdated(){
         if (imgUrl !== latestShirt){
             latestShirt = imgUrl;
             newDesignNotified = false;
-            console.log(`${new Date()}: T-Shirt updated ${imgUrl}`);
+            log(`T-Shirt updated ${imgUrl}`);
         }       
     });
 }
@@ -47,13 +49,14 @@ function sendShirtToAllChat(){
 }
 
 function sendTelegrafToAllChat(message){
+    if(!message) log(`sendTelegraf -> pass this fucking message`)
     Object.keys(users).forEach((value) => {
         sendTelegraf(value, message);
     })    
 }
 
 function sendTelegraf(chatId, message){
-    bot.telegram.sendMessage(chatId, message).then(() => console.log(`${new Date()}: message send to ${chatId}`));
+    bot.telegram.sendMessage(chatId, message).then(() => log(`message send to ${chatId}`));
 }
 
 function checkAdmin(chatId, func){
@@ -68,7 +71,7 @@ function checkAdmin(chatId, func){
 readUserJson();
 getShirtUpdated();
 
-jobs["UpdateShirt"] = schedule.scheduleJob({hour: 0, minute: 10}, () => {
+jobs["UpdateShirt"] = schedule.scheduleJob({hour: 1, minute: 00}, () => {
     getShirtUpdated();
 });
 
@@ -82,15 +85,15 @@ bot.start((ctx) => addNewUser(ctx.chat.first_name, ctx.chat.id));
 bot.hears('update', (ctx) => sendTelegraf(ctx.chat.id, getShirtUpdateMessage()));
 bot.hears('updateShirt', (ctx) => {
     if(checkAdmin(ctx.chat.id, getShirtUpdated)){
-        ctx.reply('T-Shirt updated!').then(() => console.log(`${new Date()}: updateShirt -> yeah`));
+        ctx.reply('T-Shirt updated!').then(() => log(`updateShirt -> yeah`));
     } else {
-        ctx.reply('E sticazzi?').then(() => console.log(`${new Date()}: updateShirt -> sticazzi`));
+        ctx.reply('E sticazzi?').then(() => log(`updateShirt -> sticazzi`));
     }
 });
 bot.hears('sendAll', (ctx) => {
     if(!checkAdmin(ctx.chat.id, sendShirtToAllChat))
-        ctx.reply('E sticazzi?').then(() => console.log(`${new Date()}: updateShirt -> sticazzi`));
+        ctx.reply('E sticazzi?').then(() => log(`updateShirt -> sticazzi`));
 });
 
-bot.launch().then(() => console.log(`${new Date()}: BOT started`));
+bot.launch().then(() => log(`BOT started`));
 
